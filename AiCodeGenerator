@@ -1,0 +1,11 @@
+2026-01-08T23:54:33.374+08:00  INFO 30076 --- [main] c.x.a.AiCodeGeneratorApplication         : Starting AiCodeGeneratorApplication using Java 21.0.4 with PID 30076 (D:\ToDoPractise\JAVAtest\AiCodeGenerator\target\classes started by 12283 in D:\ToDoPractise\JAVAtest\AiCodeGenerator)
+2026-01-08T23:54:33.377+08:00  INFO 30076 --- [main] c.x.a.AiCodeGeneratorApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-08T23:54:34.186+08:00  INFO 30076 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8123 (http)
+2026-01-08T23:54:34.200+08:00  INFO 30076 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-08T23:54:34.201+08:00  INFO 30076 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.50]
+2026-01-08T23:54:34.261+08:00  INFO 30076 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-01-08T23:54:34.261+08:00  INFO 30076 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 830 ms
+2026-01-08T23:54:34.625+08:00  INFO 30076 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8123 (http) with context path '/api'
+2026-01-08T23:54:34.632+08:00  INFO 30076 --- [main] c.x.a.AiCodeGeneratorApplication         : Started AiCodeGeneratorApplication in 1.717 seconds (process running for 3.255)
+2026-01-08T23:56:40.703+08:00  INFO 30076 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-08T23:56:40.742+08:00  INFO 30076 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete

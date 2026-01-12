@@ -1,10 +1,7 @@
-package com.xtx.aicodegenerator.mapper
-
-/xtx/aicodegenerator.genresult.mapper;
+package com.xtx.aicodegenerator.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com
-import com.xtx.aicodegenerator.model.entity.User;/xtx/aicodegenerator.genresult.entity.User;
+import com.xtx.aicodegenerator.model.entity.User;
 
 /**
  * 用户 映射层。

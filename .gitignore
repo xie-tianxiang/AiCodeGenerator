@@ -1,3 +1,7 @@
+###Custom###
+application-local.yml
+temp
+
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar

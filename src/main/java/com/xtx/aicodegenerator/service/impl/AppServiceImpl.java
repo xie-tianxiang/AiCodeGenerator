@@ -2,9 +2,12 @@ package com.xtx.aicodegenerator.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.xtx.aicodegenerator.constant.AppConstant;
 import com.xtx.aicodegenerator.core.AiCodeGeneratorFacade;
 import com.xtx.aicodegenerator.exception.BusinessException;
 import com.xtx.aicodegenerator.exception.ErrorCode;
@@ -22,6 +25,8 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +67,59 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         }
         // 5. 调用 AI 生成代码
         return aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
+    }
+
+    @Override
+    public String deployApp(Long appId, User loginUser) {
+        //1. 参数校验
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 ID 不能为空");
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR, "用户未登录");
+
+        //2. 查询应用信息
+        App app = this.getById(appId);
+        ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR, "应用不存在");
+
+        //3. 验证用户是否有权限访问该应用，仅本人可以生成代码
+        if (!app.getUserId().equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限部署该应用");
+        }
+
+        //4.检验是否已有deployKey
+        //若没有则生成6位deployKey
+        String deployKey = app.getDeployKey();
+        if (StrUtil.isBlank(deployKey)) {
+            deployKey = RandomUtil.randomString(6);
+        }
+
+        //5.获取代码生成的类型以及目录
+        String codeGenType = app.getCodeGenType();
+        String sourceDirName = codeGenType + "-" + appId;
+        String sourcePath = AppConstant.CODE_OUTPUT_ROOT_DIR + File.pathSeparator + sourceDirName;
+
+        //6.检查路径是否存在
+        File sourceDir = new File(sourcePath);
+        if(!sourceDir.exists() || !sourceDir.isDirectory()) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "应用代码目录不存在");
+        }
+
+        //7.复制文件到部署位置
+        String deployDirPath = AppConstant.CODE_DEPLOY_ROOT_DIR + File.pathSeparator + deployKey;
+        try {
+            FileUtil.copyContent(sourceDir, new File(deployDirPath), true);
+        } catch (Exception e){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "复制文件失败：" + e.getMessage());
+        }
+
+        //8.更新数据库
+        App updateApp = new App();
+        updateApp.setId(appId);
+        updateApp.setDeployKey(deployKey);
+        updateApp.setDeployedTime(LocalDateTime.now());
+        boolean updateResult = this.updateById(updateApp);
+        ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "部署应用信息更新失败");
+
+        //9.返回可访问的URL
+        return String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
     }
 
     @Override

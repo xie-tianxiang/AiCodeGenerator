@@ -17,6 +17,8 @@ import java.util.List;
  */
 public interface AppService extends IService<App> {
 
+    String deployApp (Long appId, User loginUser);
+
     public AppVO getAppVO(App app);
 
     QueryWrapper getQueryWrapper(AppQueryRequest appQueryRequest);

@@ -6,6 +6,12 @@ spring:
     url: jdbc:mysql://localhost:3306/aicodegenerator
     username: root
     password: 0123456xuanxuan
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      ttl: 3600
   profiles:
     active: local
 server:

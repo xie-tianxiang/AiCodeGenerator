@@ -1,6 +1,7 @@
 package com.xtx.aicodegenerator.core;
 
 import com.xtx.aicodegenerator.ai.AiCodeGeneratorService;
+import com.xtx.aicodegenerator.ai.AiCodeGeneratorServiceFactory;
 import com.xtx.aicodegenerator.ai.model.HtmlCodeResult;
 import com.xtx.aicodegenerator.ai.model.MultiFileCodeResult;
 import com.xtx.aicodegenerator.core.parser.CodeParserExecutor;
@@ -23,7 +24,7 @@ import java.io.File;
 public class AiCodeGeneratorFacade {
 
     @Resource
-    private AiCodeGeneratorService aiCodeGeneratorService;
+    private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
 
     /**
      * 通用流式代码处理方法
@@ -35,10 +36,8 @@ public class AiCodeGeneratorFacade {
      */
     private Flux<String> processCodeStream(Flux<String> codeStream, CodeGenTypeEnum codeGenType, Long appId) {
         StringBuilder codeBuilder = new StringBuilder();
-        return codeStream.doOnNext(chunk -> {
-            // 实时收集代码片段
-            codeBuilder.append(chunk);
-        }).doOnComplete(() -> {
+        // 实时收集代码片段
+        return codeStream.doOnNext(codeBuilder::append).doOnComplete(() -> {
             // 流式返回完成后保存代码
             try {
                 String completeCode = codeBuilder.toString();
@@ -65,6 +64,7 @@ public class AiCodeGeneratorFacade {
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         return switch (codeGenTypeEnum) {
             case HTML -> {
                 HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(userMessage);
@@ -92,6 +92,7 @@ public class AiCodeGeneratorFacade {
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         return switch (codeGenTypeEnum) {
             case HTML -> {
                 Flux<String> codeStream = aiCodeGeneratorService.generateHtmlCodeStream(userMessage);

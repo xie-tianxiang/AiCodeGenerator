@@ -9,6 +9,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.xtx.aicodegenerator.constant.AppConstant;
 import com.xtx.aicodegenerator.core.AiCodeGeneratorFacade;
+import com.xtx.aicodegenerator.core.handler.StreamHandlerExecutor;
 import com.xtx.aicodegenerator.exception.BusinessException;
 import com.xtx.aicodegenerator.exception.ErrorCode;
 import com.xtx.aicodegenerator.exception.ThrowUtils;
@@ -55,6 +56,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     @Resource
     private ChatHistoryService chatHistoryService;
 
+    @Resource
+    private StreamHandlerExecutor streamHandlerExecutor;
+
     @Override
     public Flux<String> chatToGenCode(Long appId, String message, User loginUser) {
         // 1. 参数校验
@@ -78,20 +82,11 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
 
         // 6. 调用 AI 生成代码 (流式)
-        Flux<String> contentFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
 
         // 7. 插入 AI 生成消息
-        StringBuilder aiResponseBuilder = new StringBuilder();
-        return contentFlux.map(chunk -> {
-            aiResponseBuilder.append(chunk);
-            return chunk;
-        }).doOnComplete(() -> {
-            String aiResponse = aiResponseBuilder.toString();
-            chatHistoryService.addChatMessage(appId, aiResponse, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
-        }).doOnError(error -> {
-            String errorMessage = "AI 回复失败" + error.getMessage();
-            chatHistoryService.addChatMessage(appId, errorMessage, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
-        });
+        return streamHandlerExecutor.doExecute(codeStream, chatHistoryService, appId, loginUser, codeGenTypeEnum);
+
     }
 
     @Override

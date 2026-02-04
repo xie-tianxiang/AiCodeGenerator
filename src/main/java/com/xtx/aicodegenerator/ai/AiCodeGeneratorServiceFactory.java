@@ -2,7 +2,7 @@ package com.xtx.aicodegenerator.ai;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.xtx.aicodegenerator.ai.tools.FileWriteTool;
+import com.xtx.aicodegenerator.ai.tools.ToolManager;
 import com.xtx.aicodegenerator.exception.BusinessException;
 import com.xtx.aicodegenerator.exception.ErrorCode;
 import com.xtx.aicodegenerator.model.enums.CodeGenTypeEnum;
@@ -42,6 +42,8 @@ public class AiCodeGeneratorServiceFactory {
     private RedisChatMemoryStore redisChatMemoryStore;
     @Resource
     private ChatHistoryService chatHistoryService;
+    @Resource
+    private ToolManager toolManager;
 
     public AiCodeGeneratorService getAiCodeGeneratorService(long appId) {
         return createAiCodeGeneratorService(appId, CodeGenTypeEnum.HTML);
@@ -75,16 +77,14 @@ public class AiCodeGeneratorServiceFactory {
         return switch (codeGenType) {
             // VUE项目生成使用推理模型和工具调用
             case VUE_PROJECT -> AiServices.builder(AiCodeGeneratorService.class)
-                    .chatModel(chatModel)
                     .streamingChatModel(reasoningStreamingChatModel)
                     .chatMemoryProvider(memoryId -> chatMemory)
-                    .tools(new FileWriteTool())
-                    //处理工具调用幻觉问题
-                    .hallucinatedToolNameStrategy(toolExecutionRequest ->
-                            ToolExecutionResultMessage.from(toolExecutionRequest,
-                                    "Error : There is no tool called" + toolExecutionRequest.name())
-                    )
+                    .tools(toolManager.getAllTools())
+                    .hallucinatedToolNameStrategy(toolExecutionRequest -> ToolExecutionResultMessage.from(
+                            toolExecutionRequest, "Error: there is no tool called " + toolExecutionRequest.name()
+                    ))
                     .build();
+
             //原生HTML或三件套使用流式对话模型
             case MULTI_FILE, HTML -> AiServices.builder(AiCodeGeneratorService.class)
                     .chatModel(chatModel)

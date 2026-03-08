@@ -18,7 +18,7 @@
 
 功能模块：
 
-![](https://pic.yupi.icu/1/image%20(1).png)
+![](https://github.com/xie-tianxiang/AiCodeGenerator/image/overall.png?raw=true)
 
 核心业务流程：
 

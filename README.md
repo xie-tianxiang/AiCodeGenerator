@@ -18,7 +18,7 @@
 
 功能模块：
 
-![](https://github.com/xie-tianxiang/AiCodeGenerator/image/overall.png?raw=true)
+![](https://github.com/xie-tianxiang/AiCodeGenerator/blob/master/image/overall.png?raw=true)
 
 核心业务流程：
 
